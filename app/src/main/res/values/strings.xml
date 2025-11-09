@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">TvMouseNavigator</string>
+    <string name="start_service">Servisi Başlat</string>
+    <string name="stop_service">Servisi Durdur</string>
+    <string name="overlay_permission_rationale">Overlay izni gerekli. Lütfen izin verin.</string>
+    <string name="accessibility_service_description">Android TV için kumanda ile kullanılabilen fare imleci</string>
+    <string name="accessibility_enable_instructions">Lütfen erişilebilirlik ayarlarından TvMouseNavigator imlecini etkinleştirin.</string>
+</resources>
