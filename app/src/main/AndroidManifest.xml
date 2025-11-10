@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Overlay için gerekli -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+    <!-- Foreground servis izni -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
@@ -9,18 +12,21 @@
         android:icon="@android:drawable/ic_media_play"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.TvMouseNavigator">
+        android:theme="@style/Theme.TvNavigator">
 
+        <!-- Floating cursor foreground service -->
         <service
             android:name="com.ilhanakd.tvnavigator.service.CursorService"
             android:enabled="true"
             android:exported="false" />
 
+        <!-- Accessibility service for tap injection -->
         <service
             android:name="com.ilhanakd.tvnavigator.service.CursorAccessibilityService"
             android:enabled="true"
             android:exported="false"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />
             </intent-filter>
@@ -30,17 +36,20 @@
                 android:resource="@xml/accessibility_service_config" />
         </service>
 
+        <!-- Ana TV Activity -->
         <activity
             android:name="com.ilhanakd.tvnavigator.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:launchMode="singleTop">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
+
         </activity>
 
     </application>
