@@ -17,12 +17,23 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
+
 import com.ilhanakd.tvnavigator.service.CursorService
 import com.ilhanakd.tvnavigator.ui.theme.TvMouseNavigatorTheme
 
@@ -108,7 +119,20 @@ private fun ControlScreen(
     onStopService: () -> Unit
 ) {
     val context = LocalContext.current
-    val overlayGranted = Settings.canDrawOverlays(context)
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var overlayGranted by remember { mutableStateOf(Settings.canDrawOverlays(context)) }
+    val currentContext by rememberUpdatedState(context)
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _: LifecycleOwner, event: Lifecycle.Event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                overlayGranted = Settings.canDrawOverlays(currentContext)
+            }
+        }
+        val lifecycle = lifecycleOwner.lifecycle
+        lifecycle.addObserver(observer)
+        onDispose { lifecycle.removeObserver(observer) }
+    }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -118,7 +142,7 @@ private fun ControlScreen(
         Text(text = stringResource(id = R.string.app_name), style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(32.dp))
         Button(onClick = {
-            if (Settings.canDrawOverlays(context)) {
+            if (overlayGranted) {
                 onStartService()
             } else {
                 onRequestOverlay()

@@ -9,6 +9,7 @@ import android.hardware.input.InputManager
 import android.os.Build
 import android.os.SystemClock
 import android.util.Log
+import android.view.InputDevice
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.accessibility.AccessibilityEvent
@@ -71,6 +72,8 @@ class CursorAccessibilityService : AccessibilityService() {
         val downTime = SystemClock.uptimeMillis()
         val downEvent = MotionEvent.obtain(downTime, downTime, MotionEvent.ACTION_DOWN, x, y, 0)
         val upEvent = MotionEvent.obtain(downTime, downTime + 50, MotionEvent.ACTION_UP, x, y, 0)
+        downEvent.source = InputDevice.SOURCE_TOUCHSCREEN
+        upEvent.source = InputDevice.SOURCE_TOUCHSCREEN
         try {
             val inputManager = InputManager::class.java.getDeclaredMethod("getInstance").invoke(null) as InputManager
             val injectMethod = InputManager::class.java.getDeclaredMethod(
