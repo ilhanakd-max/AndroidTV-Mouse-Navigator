@@ -9,7 +9,10 @@ import android.content.Intent
 import android.graphics.PixelFormat
 import android.os.Build
 import android.os.IBinder
+import android.util.DisplayMetrics
 import android.util.Log
+import android.util.Size
+import android.view.WindowInsets
 import android.view.WindowManager
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.ComposeView
@@ -67,17 +70,8 @@ class CursorService : Service() {
 
         cursorView = composeView
 
-        val metrics = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            val windowMetrics = wm.currentWindowMetrics
-            val bounds = windowMetrics.bounds
-            android.util.Size(bounds.width(), bounds.height())
-        } else {
-            val display = wm.defaultDisplay
-            val displayMetrics = android.util.DisplayMetrics()
-            display?.getRealMetrics(displayMetrics)
-            android.util.Size(displayMetrics.widthPixels, displayMetrics.heightPixels)
-        }
-        if (metrics.width > 0 && metrics.height > 0) {
+        val metrics = calculateDisplaySize(wm)
+        if (metrics != null) {
             CursorState.initialize(metrics.width, metrics.height)
         } else {
             Log.w(TAG, "Unable to fetch display metrics; cursor may not move correctly")
@@ -88,10 +82,37 @@ class CursorService : Service() {
 
     private fun removeCursor() {
         cursorView?.let { view ->
-            windowManager?.removeView(view)
+            try {
+                windowManager?.removeView(view)
+            } catch (exception: IllegalArgumentException) {
+                Log.w(TAG, "Cursor view was not attached to window manager", exception)
+            }
         }
         cursorView = null
         windowManager = null
+    }
+
+    private fun calculateDisplaySize(windowManager: WindowManager): Size? {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val windowMetrics = windowManager.currentWindowMetrics
+            val bounds = windowMetrics.bounds
+            val insets = windowMetrics.windowInsets.getInsetsIgnoringVisibility(
+                WindowInsets.Type.navigationBars() or
+                    WindowInsets.Type.statusBars() or
+                    WindowInsets.Type.displayCutout()
+            )
+            val width = bounds.width() - insets.left - insets.right
+            val height = bounds.height() - insets.top - insets.bottom
+            if (width > 0 && height > 0) Size(width, height) else null
+        } else {
+            @Suppress("DEPRECATION")
+            val display = windowManager.defaultDisplay ?: return null
+            val displayMetrics = DisplayMetrics()
+            display.getRealMetrics(displayMetrics)
+            val width = displayMetrics.widthPixels
+            val height = displayMetrics.heightPixels
+            if (width > 0 && height > 0) Size(width, height) else null
+        }
     }
 
     private fun createNotification(): Notification {
