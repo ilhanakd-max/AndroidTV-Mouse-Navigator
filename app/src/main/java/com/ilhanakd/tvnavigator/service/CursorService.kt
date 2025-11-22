@@ -56,6 +56,7 @@ class CursorService : Service() {
             else
                 WindowManager.LayoutParams.TYPE_PHONE,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
                 WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
                 WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
             PixelFormat.TRANSLUCENT
@@ -70,7 +71,7 @@ class CursorService : Service() {
 
         cursorView = composeView
 
-        val metrics = calculateDisplaySize(wm)
+        val metrics = calculateDisplaySize(wm) ?: fallbackDisplaySize()
         if (metrics != null) {
             CursorState.initialize(metrics.width, metrics.height)
         } else {
@@ -113,6 +114,13 @@ class CursorService : Service() {
             val height = displayMetrics.heightPixels
             if (width > 0 && height > 0) Size(width, height) else null
         }
+    }
+
+    private fun fallbackDisplaySize(): Size? {
+        val displayMetrics = resources.displayMetrics
+        val width = displayMetrics.widthPixels
+        val height = displayMetrics.heightPixels
+        return if (width > 0 && height > 0) Size(width, height) else null
     }
 
     private fun createNotification(): Notification {

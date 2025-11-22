@@ -31,6 +31,10 @@ object CursorState {
     }
 
     fun initialize(width: Int, height: Int) {
+        if (width <= 0 || height <= 0) {
+            Log.w(TAG, "Skipping cursor initialization because screen bounds are invalid: ${'$'}width x ${'$'}height")
+            return
+        }
         screenWidth = width
         screenHeight = height
         val startX = (width - cursorSizePx) / 2
@@ -44,6 +48,10 @@ object CursorState {
     }
 
     fun move(dx: Int, dy: Int) {
+        if (screenWidth == 0 || screenHeight == 0) {
+            Log.w(TAG, "Ignoring move request because screen bounds are not initialized")
+            return
+        }
         val current = _cursorPosition.value
         val newX = (current.x + dx * STEP_PX).coerceIn(0, maxOf(screenWidth - cursorSizePx, 0))
         val newY = (current.y + dy * STEP_PX).coerceIn(0, maxOf(screenHeight - cursorSizePx, 0))
